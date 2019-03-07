@@ -114,6 +114,11 @@ public class Project2Parser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof Project2Listener ) ((Project2Listener)listener).exitExprList(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Project2Visitor ) return ((Project2Visitor<? extends T>)visitor).visitExprList(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final ExprListContext exprList() throws RecognitionException {
@@ -185,6 +190,11 @@ public class Project2Parser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof Project2Listener ) ((Project2Listener)listener).exitVarDef(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Project2Visitor ) return ((Project2Visitor<? extends T>)visitor).visitVarDef(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final VarDefContext varDef() throws RecognitionException {
@@ -229,6 +239,11 @@ public class Project2Parser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof Project2Listener ) ((Project2Listener)listener).exitTopExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Project2Visitor ) return ((Project2Visitor<? extends T>)visitor).visitTopExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -278,6 +293,11 @@ public class Project2Parser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof Project2Listener ) ((Project2Listener)listener).exitExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof Project2Visitor ) return ((Project2Visitor<? extends T>)visitor).visitExpr(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
