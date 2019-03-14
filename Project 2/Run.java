@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.antlr.v4.runtime.CharStreams;
@@ -7,11 +9,14 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class Run
 {
-    public static void main(String[] args) 
+    public static void main(String[] args) throws IOException 
     {
-        String expression = "";
+        String expression = "x = 5; x; define dog(a) {x = a; print(x); return 0.0;}; dog(7); x;";
         //CharStreams user;
-        Project2Lexer lexer = new Project2Lexer(CharStreams.fromString(expression));
+        String fileName = "/Project2Antlr/test";
+        File file = new File(System.getProperty("home.dir"), "src/input.txt");
+        
+        Project2Lexer lexer = new Project2Lexer(CharStreams.fromFileName(file.getAbsolutePath()));
         TokenStream jimmyDean = new CommonTokenStream(lexer);
         Project2Parser parser = new Project2Parser(jimmyDean);
         //ParseTree tree = parser.exprList();

@@ -1,11 +1,15 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 import org.antlr.v4.runtime.misc.NotNull;
 
 public class EvalVisitor extends Project2BaseVisitor<Double> {
 	
+	Stack<HashMap<String, Double>> scopeStack = new Stack<>();
+	
 	HashMap<String, Double> varMap = new HashMap<>();
+	
 	HashMap<String, Function> funcMap = new HashMap<>();
 	
 	ArrayList<Double> answersArray = new ArrayList<>();
@@ -73,13 +77,20 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			{
     				//If it does exist
     				
+    				//Create the new scope
+    				HashMap<String, Double> tempScope = new HashMap<>();
+    				scopeStack.push(tempScope);
+    				
     				//Create the parameters.
     				for(int i = 0; i < temp.getParameters().topExpr().size(); i++)
     				{
     					String paramID = temp.getParameters().topExpr(i).expr().ID().getText();
     					Double paramValue = visit(ctx.ep.topExpr(i).expr());
     					
-    					varMap.put(paramID, paramValue);
+    					System.out.println("paramID: " + paramID);
+    					System.out.println("paramValue: " + paramValue);
+    					
+    					scopeStack.peek().put(paramID, paramValue);
     				}
     				
     				//Execute the Code in the called function
@@ -87,6 +98,11 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     				
     				//Return the designated return value
     				Double returnValue = visit(temp.getReturn());
+    				
+    				//Pop the scope before returning
+    				scopeStack.pop();
+    				
+    				//Finally return
     				return returnValue;
     			}
     			
@@ -101,18 +117,63 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
         		{
         			if(ctx.op != null && ctx.op.getText().equals("++"))
         			{
-        				varMap.put(ctx.ID().getText(), varMap.getOrDefault(ctx.ID().getText(), 0.0) + 1.0);
-        				return varMap.getOrDefault(ctx.ID().getText(), 0.0);
+        				//Search the scopes for the variable.
+            			for(int i = scopeStack.size() - 1; i >= 0; i--)
+        				{
+            				//If it is in the scope
+        					if(scopeStack.elementAt(i).get(ctx.ID().getText()) != null)
+        					{
+        						//Add one to it and return it.
+        						scopeStack.elementAt(i).put(ctx.ID().getText(), scopeStack.elementAt(i).getOrDefault(ctx.ID().getText(), 0.0) + 1.0);
+        						return scopeStack.elementAt(i).get(ctx.ID().getText());
+        					}
+        				}
+            			
+            			//If it isn't found at all
+            			//Create it, and make the value 1.
+            			scopeStack.peek().put(ctx.ID().getText(), 1.0);
+            			
+            			//And return it
+            			return 1.0;
         			}
         			else if(ctx.op != null && ctx.op.getText().equals("--"))
         			{
-        				varMap.put(ctx.ID().getText(), varMap.getOrDefault(ctx.ID().getText(), 0.0) - 1.0);
-        				return varMap.getOrDefault(ctx.ID().getText(), 0.0);
+        				//Search the scopes for the variable.
+            			for(int i = scopeStack.size() - 1; i >= 0; i--)
+        				{
+            				//If it is in the scope
+        					if(scopeStack.elementAt(i).get(ctx.ID().getText()) != null)
+        					{
+        						//Add one to it and return it.
+        						scopeStack.elementAt(i).put(ctx.ID().getText(), scopeStack.elementAt(i).getOrDefault(ctx.ID().getText(), 0.0) - 1.0);
+        						return scopeStack.elementAt(i).get(ctx.ID().getText());
+        					}
+        				}
+            			
+            			//If it isn't found at all
+            			//Create it, and make the value -1.
+            			scopeStack.peek().put(ctx.ID().getText(), -1.0);
+            			
+            			//And return it
+            			return -1.0;
         			}
         		}
     			
     			System.out.println("Getting Variable");
-    			return varMap.getOrDefault(ctx.ID().getText(), 0.0);
+    			
+    			//Search the scopes for the variable.
+    			for(int i = scopeStack.size() - 1; i >= 0; i--)
+				{
+    				//If it is in the scope
+					if(scopeStack.elementAt(i).get(ctx.ID().getText()) != null)
+					{
+						//Return it
+						return scopeStack.elementAt(i).get(ctx.ID().getText());
+					}
+				}
+				
+    			//If it isn't, return 0.
+				return 0.0;
     		}
     		
     		if(ctx.COMMENT() != null)
@@ -198,7 +259,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			String variable = ctx.getText().substring(0, ctx.getText().indexOf("="));
     			Double value = visit(ctx.e);
     			
-    			varMap.put(variable, value);
+    			scopeStack.peek().put(variable, value);
     			return 0.0;
     		}
     		
@@ -242,7 +303,10 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		else if(ctx.getText().substring(0,6).equals("print("))
     		{
     			System.out.println("Found Print");
-    			System.out.println(visit(ctx.e));
+    			
+    			answersArray.add(visit(ctx.e));
+    			answersText.add("Printing: " + ctx.e.getText());
+    			//System.out.println(visit(ctx.e));
     			return (visit(ctx.e));
     		}
     		return visit(ctx.e);
@@ -278,6 +342,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     
     public ArrayList<Double> start(Project2Parser.ExprListContext ctx)
     {
+    	scopeStack.push(varMap);
     	for(int i = 0; i < ctx.topExpr().size(); i++)
     	{
     		answersArray.add(visit(ctx.topExpr(i).expr()));
