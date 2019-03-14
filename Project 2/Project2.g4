@@ -27,6 +27,10 @@ expr:
     | el=expr op='&&' er=expr
     | el=expr op='||' er=expr
     | op='!' e=expr
+    | el=expr op='>' er=expr
+    | el=expr op='>=' er=expr
+    | el=expr op='<' er=expr
+    | el=expr op='<=' er=expr
 
     //Square Root and Read
     | op='sqrt(' e=expr ')'
@@ -43,6 +47,21 @@ expr:
 
     //Variable Recognition
     | ID '=' e=expr
+
+    //If Statements
+    | op= 'if(' e=expr')' 'then' '{' et=exprList '}' 'else' '{' ef=exprList '}'
+
+    //For Statements
+    | op = 'for(' e1=expr e2=expr e3=expr ')' '{' ef=exprList '}'
+
+    //While Loop
+    | op = 'while(' e=expr ')' '{' ew=exprList '}'
+
+    //Function Defining
+    | 'define' op = ID '(' ep=exprList ')' '{' ec = exprList 'return' ert = expr ';' '}'
+
+    //Function Calling
+    | op = ID '(' ep=exprList ')'
 
     //Others
     | DBL

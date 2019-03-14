@@ -1,10 +1,15 @@
 {
+    "version": "2.0.0",
     "configurations": [
-        {
-            "type": "java",
-            "name": "CodeLens (Launch) - Run",
-            "request": "launch",
-            "mainClass": "Run"
-        }
-    ]
-}
+      {
+        "name": "Project2",
+        "type": "antlr-debug",
+        "request": "launch",
+        "input": "input.txt",
+        "grammar": "Project2.g4",
+        "startRule": "exprList",
+        "printParseTree": true,
+        "visualParseTree": true
+     }
+     ]
+  }
