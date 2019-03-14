@@ -6,7 +6,10 @@ import org.antlr.v4.runtime.misc.NotNull;
 public class EvalVisitor extends Project2BaseVisitor<Double> {
 	
 	HashMap<String, Double> varMap = new HashMap<>();
+	HashMap<String, Function> funcMap = new HashMap<>();
+	
 	ArrayList<Double> answersArray = new ArrayList<>();
+	public ArrayList<String> answersText = new ArrayList<>();
 
     @Override
     public Double visitExpr(@NotNull Project2Parser.ExprContext ctx) {
@@ -16,6 +19,81 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	{	
     		System.out.println("Leaf Node");
     		
+    		//For statements
+    		if(ctx.ef != null)
+    		{
+    			System.out.println("In For");
+    			
+    			//Initialize For Loop
+    			visit(ctx.e1);
+    			
+    			//While the second expression is true
+    			while(visit(ctx.e2) == 1.0)
+    			{
+    				//And the expression list is populated
+    				if(ctx.ef != null)
+    				{
+    					//Execute Commands
+    					executeCode(ctx.ef);
+    				}
+    				
+    				//Execute 3rd expression for incrementing
+    				visit(ctx.e3);
+    			}
+    			return 0.0;
+    		}
+    		
+    		//Function Definitions and Calling
+    		if(ctx.ep != null)
+    		{
+    			//If it is being defined
+    			if(ctx.getText().contains("define"))
+    			{
+    				//Create a new function
+    				Function temp = new Function(ctx.ep, ctx.ec, ctx.ert);
+    				
+    				//Put it in the function map
+    				funcMap.put(ctx.ID().getText(), temp);
+    				
+    				return 0.0;
+    			}
+    			
+    			//If it's being called
+    			//Get the function
+    			Function temp = funcMap.get(ctx.ID().getText());
+    			
+    			//Make sure the function exists 
+    			if(temp == null)
+    			{
+    				//Let them know it doesn't exist
+    				System.out.println("Function does not exist");
+    				return 0.0;
+    			}
+    			else
+    			{
+    				//If it does exist
+    				
+    				//Create the parameters.
+    				for(int i = 0; i < temp.getParameters().topExpr().size(); i++)
+    				{
+    					String paramID = temp.getParameters().topExpr(i).expr().ID().getText();
+    					Double paramValue = visit(ctx.ep.topExpr(i).expr());
+    					
+    					varMap.put(paramID, paramValue);
+    				}
+    				
+    				//Execute the Code in the called function
+    				executeCode(temp.getCode());
+    				
+    				//Return the designated return value
+    				Double returnValue = visit(temp.getReturn());
+    				return returnValue;
+    			}
+    			
+    			
+    		}
+    		
+    		//Variables
     		if(ctx.ID() != null)
     		{
     			//Variable Incrementing
@@ -48,6 +126,56 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	else if(ctx.el == null && ctx.er == null && ctx.e != null)
     	{
     		System.out.println("Using E");
+    		
+    		//If Statement
+    		if(ctx.op != null && ctx.op.getText().equals("if("))
+    		{
+    			System.out.println("In IF");
+    			
+    			//Checks if condition statement is true or false
+    			//True statements return 1.0;
+    			//Could get messed up with other things, but no worries
+    			//Do not have to store return value because If statements
+    			//do not return anything.
+    			if(visit(ctx.e) == 1.0)
+    			{
+    				System.out.println("In True");
+    				//Start true commands if it is not empty
+    				if(ctx.et != null)
+    				{
+    					executeCode(ctx.et);
+    				}
+    			}
+    			else
+    			{
+    				System.out.println("In False");
+    				//Start false commands if it is not empty
+    				if(ctx.ef != null)
+    				{
+    					executeCode(ctx.ef);
+    				}
+    			}
+    			
+    			return 0.0;
+    		}
+    		
+    		//While Statements
+    		if(ctx.op != null && ctx.op.getText().equals("while("))
+    		{
+    			System.out.println("In while");
+    			//While the condition is true
+    			while(visit(ctx.e) == 1.0)
+    			{
+    				//And the command list is not empty
+    				if(ctx.ew != null)
+    				{
+    					//Execute all commands in block
+    					executeCode(ctx.ew);
+    				}
+    			}
+    			
+    			return 0.0;
+    		}
     		
     		//Not Operator
     		//Has to be here because of e in Grammar
@@ -139,6 +267,10 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
 	            case "^": return Math.pow(left, right);
 	            case "&&": if(left != 0.0 && right != 0.0) return 1.0; else return 0.0;
 	            case "||": if(left != 0.0 || right != 0.0) return 1.0; else return 0.0;
+	            case ">": if(left > right) return 1.0; else return 0.0;
+	            case ">=": if(left >= right) return 1.0; else return 0.0;
+	            case "<": if(left < right) return 1.0; else return 0.0;
+	            case "<=": if(left <= right) return 1.0; else return 0.0;
 	            default: throw new IllegalArgumentException("Unknown operator " + op);
 	        }
     	}
@@ -149,9 +281,20 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	for(int i = 0; i < ctx.topExpr().size(); i++)
     	{
     		answersArray.add(visit(ctx.topExpr(i).expr()));
+    		answersText.add(ctx.topExpr(i).expr().getText());
     	}
     	
     	return answersArray;
+    }
+    
+    public void executeCode(Project2Parser.ExprListContext ctx)
+    {
+    	for(int i = 0; i < ctx.topExpr().size(); i++)
+    	{
+    		visit(ctx.topExpr(i).expr());
+    	}
+    	
+    	//return answersArray;
     }
 
     /*
