@@ -20,7 +20,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
 
     @Override
     public Double visitExpr(@NotNull Project2Parser.ExprContext ctx) {
-    	System.out.println(ctx.getText());
     	
     	//Should check if it's a leaf node and return the value.
     	if(!activeReturn)
@@ -28,12 +27,10 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	
     	if(ctx.el == null && ctx.er == null && ctx.e == null)
     	{	
-    		System.out.println("Leaf Node");
     		
     		//For statements
     		if(ctx.ef != null)
     		{
-    			System.out.println("In For");
     			
     			//Initialize For Loop
     			visit(ctx.e1);
@@ -164,7 +161,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
         			}
         		}
     			
-    			System.out.println("Getting Variable");
     			
     			//Search the scopes for the variable.
     			for(int i = scopeStack.size() - 1; i >= 0; i--)
@@ -183,7 +179,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		
     		if(ctx.COMMENT() != null)
     		{
-    			System.out.println("Comment");
     			return 0.0;
     		}
     			
@@ -191,7 +186,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	}
     	else if(ctx.el == null && ctx.er == null && ctx.e != null)
     	{
-    		System.out.println("Using E");
     		
     		//Return Statements
     		if(ctx.op != null && ctx.op.getText().equals("return"))
@@ -204,7 +198,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		//If Statement
     		if(ctx.op != null && ctx.op.getText().equals("if("))
     		{
-    			System.out.println("In IF");
     			
     			//Checks if condition statement is true or false
     			//True statements return 1.0;
@@ -213,7 +206,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			//do not return anything.
     			if(visit(ctx.e) == 1.0)
     			{
-    				System.out.println("In True");
     				//Start true commands if it is not empty
     				if(ctx.et != null)
     				{
@@ -222,7 +214,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			}
     			else
     			{
-    				System.out.println("In False");
     				//Start false commands if it is not empty
     				if(ctx.ef != null)
     				{
@@ -236,7 +227,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		//While Statements
     		if(ctx.op != null && ctx.op.getText().equals("while("))
     		{
-    			System.out.println("In while");
     			//While the condition is true
     			while(visit(ctx.e) == 1.0)
     			{
@@ -268,7 +258,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		//Checking for Variable Assignment
     		if(ctx.getText().contains("="))
     		{
-    			System.out.println("Assignment");
     			String variable = ctx.getText().substring(0, ctx.getText().indexOf("="));
     			Double value = visit(ctx.e);
     			
@@ -279,29 +268,24 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		//Parentheses
     		if(ctx.getText().substring(0,1).equals("("))
     		{
-    			System.out.println("Found Open Paren");
     			return visit(ctx.e);
     		}
     		
     		//Math Library Functions
     		else if(ctx.getText().substring(0,2).equals("s("))
     		{
-    			System.out.println("Found sine");
     			return Math.sin(visit(ctx.e));
     		}
     		else if(ctx.getText().substring(0,2).equals("c("))
     		{
-    			System.out.println("Found cosine");
     			return Math.cos(visit(ctx.e));
     		}
     		else if(ctx.getText().substring(0,2).equals("l("))
     		{
-    			System.out.println("Found log");
     			return Math.log(visit(ctx.e));
     		}
     		else if(ctx.getText().substring(0,2).equals("e("))
     		{
-    			System.out.println("Found e(");
     			return Math.exp(visit(ctx.e));
     		}
     		
@@ -310,12 +294,10 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     		//Sqrt and Print
     		else if(ctx.getText().substring(0,5).equals("sqrt("))
     		{
-    			System.out.println("Found sqrt");
     			return Math.sqrt(visit(ctx.e));
     		}
     		else if(ctx.getText().substring(0,6).equals("print("))
     		{
-    			System.out.println("Found Print");
     			
     			answersArray.add(visit(ctx.e));
     			answersText.add("Printing: " + ctx.e.getText());
@@ -327,13 +309,10 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	else
     	{
     	
-	    	System.out.println("Going Left");
 	        Double left = visit(ctx.el);
 	        
-	        System.out.println("Going Right");
 	        Double right = visit(ctx.er);
 	        
-	        System.out.println("Getting Operator");
 	        String op = ctx.op.getText();
 	        switch (op) 
 	        {
