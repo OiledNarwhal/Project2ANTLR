@@ -14,11 +14,18 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
 	
 	ArrayList<Double> answersArray = new ArrayList<>();
 	public ArrayList<String> answersText = new ArrayList<>();
+	
+	boolean activeReturn = false;
+	Double returnValue = 0.0;
 
     @Override
     public Double visitExpr(@NotNull Project2Parser.ExprContext ctx) {
     	System.out.println(ctx.getText());
+    	
     	//Should check if it's a leaf node and return the value.
+    	if(!activeReturn)
+    	{
+    	
     	if(ctx.el == null && ctx.er == null && ctx.e == null)
     	{	
     		System.out.println("Leaf Node");
@@ -44,7 +51,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     				//Execute 3rd expression for incrementing
     				visit(ctx.e3);
     			}
-    			return 0.0;
+    			return returnValue;
     		}
     		
     		//Function Definitions and Calling
@@ -54,7 +61,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			if(ctx.getText().contains("define"))
     			{
     				//Create a new function
-    				Function temp = new Function(ctx.ep, ctx.ec, ctx.ert);
+    				Function temp = new Function(ctx.ep, ctx.ec);
     				
     				//Put it in the function map
     				funcMap.put(ctx.ID().getText(), temp);
@@ -76,6 +83,8 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     			else
     			{
     				//If it does exist
+    				//Update ReturnValue
+    				returnValue = 0.0;
     				
     				//Create the new scope
     				HashMap<String, Double> tempScope = new HashMap<>();
@@ -96,17 +105,13 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     				//Execute the Code in the called function
     				executeCode(temp.getCode());
     				
-    				//Return the designated return value
-    				Double returnValue = visit(temp.getReturn());
-    				
     				//Pop the scope before returning
     				scopeStack.pop();
     				
-    				//Finally return
+    				activeReturn = false;
+    				
     				return returnValue;
     			}
-    			
-    			
     		}
     		
     		//Variables
@@ -188,6 +193,14 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	{
     		System.out.println("Using E");
     		
+    		//Return Statements
+    		if(ctx.op != null && ctx.op.getText().equals("return"))
+    		{
+    			returnValue = returnValue + visit(ctx.e);
+    			activeReturn = true;
+    			return visit(ctx.e);
+    		}
+    		
     		//If Statement
     		if(ctx.op != null && ctx.op.getText().equals("if("))
     		{
@@ -217,7 +230,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     				}
     			}
     			
-    			return 0.0;
+    			return returnValue;
     		}
     		
     		//While Statements
@@ -235,7 +248,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     				}
     			}
     			
-    			return 0.0;
+    			return returnValue;
     		}
     		
     		//Not Operator
@@ -338,6 +351,11 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
 	            default: throw new IllegalArgumentException("Unknown operator " + op);
 	        }
     	}
+    	}//End of active return
+    	else
+    	{
+    		return returnValue;
+    	}
     }
     
     public ArrayList<Double> start(Project2Parser.ExprListContext ctx)
@@ -354,9 +372,23 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     
     public void executeCode(Project2Parser.ExprListContext ctx)
     {
-    	for(int i = 0; i < ctx.topExpr().size(); i++)
+    	if(!activeReturn)
     	{
-    		visit(ctx.topExpr(i).expr());
+	    	for(int i = 0; i < ctx.topExpr().size(); i++)
+	    	{
+	    		if(!activeReturn)
+	    		{
+	    			visit(ctx.topExpr(i).expr());
+	    		}
+	    		else
+	    		{
+	    			
+	    		}
+	    	}
+    	}
+    	else
+    	{
+    		
     	}
     	
     	//return answersArray;

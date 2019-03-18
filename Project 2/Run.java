@@ -11,9 +11,9 @@ public class Run
 {
     public static void main(String[] args) throws IOException 
     {
-        String expression = "x = 5; x; define dog(a) {x = a; print(x); return 0.0;}; dog(7); x;";
+        //String expression = "x = 5; x; define dog(a) {x = a; print(x); return 0.0;}; dog(7); x;";
         //CharStreams user;
-        String fileName = "/Project2Antlr/test";
+        //String fileName = "/Project2Antlr/test";
         File file = new File(System.getProperty("home.dir"), "src/input.txt");
         
         Project2Lexer lexer = new Project2Lexer(CharStreams.fromFileName(file.getAbsolutePath()));
@@ -24,7 +24,7 @@ public class Run
         ArrayList<Double> answerList = visitor.start(parser.exprList());
         
         
-        System.out.println(expression);
+        //System.out.println(expression);
         for(int i = 0; i < answerList.size(); i++)
         {
         	Double answer = answerList.get(i);

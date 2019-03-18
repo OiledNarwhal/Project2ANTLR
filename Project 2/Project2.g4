@@ -58,10 +58,13 @@ expr:
     | op = 'while(' e=expr ')' '{' ew=exprList '}'
 
     //Function Defining
-    | 'define' op = ID '(' ep=exprList ')' '{' ec = exprList 'return' ert = expr ';' '}'
+    | 'define' op = ID '(' ep=exprList ')' '{' ec = exprList '}'
 
     //Function Calling
     | op = ID '(' ep=exprList ')'
+
+    //Return Statement
+    | op = 'return' e = expr
 
     //Others
     | DBL
