@@ -93,9 +93,6 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     					String paramID = temp.getParameters().topExpr(i).expr().ID().getText();
     					Double paramValue = visit(ctx.ep.topExpr(i).expr());
     					
-    					System.out.println("paramID: " + paramID);
-    					System.out.println("paramValue: " + paramValue);
-    					
     					scopeStack.peek().put(paramID, paramValue);
     				}
     				
@@ -344,6 +341,7 @@ public class EvalVisitor extends Project2BaseVisitor<Double> {
     	{
     		answersArray.add(visit(ctx.topExpr(i).expr()));
     		answersText.add(ctx.topExpr(i).expr().getText());
+    		returnValue = 0.0;
     	}
     	
     	return answersArray;
